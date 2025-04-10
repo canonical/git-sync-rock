@@ -1,0 +1,12 @@
+process:
+  git-sync:
+    running: true
+
+# for this to work, we need to run git-sync with "--http-metrics --http-bind :1234"
+http:
+  ready:
+    status: 200
+    url: http://localhost:1234
+  metrics:
+    status: 200
+    url: http://localhost:1234/metrics
