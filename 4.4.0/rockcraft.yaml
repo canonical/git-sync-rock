@@ -7,7 +7,7 @@ license: Apache-2.0
 services:
   git-sync:
     # enable the /metrics endpoint so we can liveness-check the rock.
-    command: "git-sync --http-metrics --http-bind :1234"
+    command: "git-sync --repo https://github.com/kubernetes/git-sync/ --root git-sync --http-metrics --http-bind :1234"
     override: replace
     startup: enabled
 
@@ -20,6 +20,11 @@ platforms:
   s390x:
 
 parts:
+  git:
+    plugin: nil
+    stage-packages:
+      - git
+
   git-sync:
     plugin: go
     source: https://github.com/kubernetes/git-sync
@@ -28,18 +33,25 @@ parts:
     source-depth: 1
     build-snaps:
       - go/1.24/stable
-      - docker
     build-packages:
       - make
     override-build: |
-      make build GOOS=linux GOARCH=${CRAFT_ARCH_BUILD_FOR}
+      # their makefile runs build.sh in a docker container, but we can't do that:
+      #   docker: Error response from daemon: failed to create task for container: 
+      #   failed to create shim task: OCI runtime create failed: runc create failed: 
+      #   unable to start container process: error during container init: 
+      #   error mounting "cgroup" to rootfs at "/sys/fs/cgroup": mount src=cgroup, dst=/sys/fs/cgroup, 
+      #   dstFd=/proc/thread-self/fd/8, flags=0xf: permission denied: unknown.
+      # make build GOOS=linux GOARCH=${CRAFT_ARCH_BUILD_FOR}
+      VERSION=$(git describe --tags --always --dirty)
+      echo "building linux/${CRAFT_ARCH_BUILD_FOR}@${VERSION}"
+      GOOS=linux GOARCH=${CRAFT_ARCH_BUILD_FOR} VERSION=${VERSION} go build
       install -D -m755 git-sync ${CRAFT_PART_INSTALL}/bin/git-sync
-    stage:
-      - bin/git-sync
 
   ca-certs:
     plugin: nil
     overlay-packages: [ca-certificates]
+
   deb-security-manifest:
     plugin: nil
     after:
