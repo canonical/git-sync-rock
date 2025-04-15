@@ -15,9 +15,6 @@ services:
 #  https://github.com/kubernetes/git-sync/blob/913a6be64776f523a9da75fe8d37d3cf9b83c44d/Makefile#L42
 platforms:
   amd64:
-  arm64:
-  ppc64el:
-  s390x:
 
 parts:
   git:
