@@ -7,7 +7,7 @@ license: Apache-2.0
 services:
   git-sync:
     # enable the /metrics endpoint so we can liveness-check the rock.
-    command: "git-sync --repo https://github.com/kubernetes/git-sync/ --root git-sync --http-metrics --http-bind :1234"
+    command: git-sync [ --repo https://github.com/kubernetes/git-sync/ --root git-sync --http-metrics --http-bind :1234 ]
     override: replace
     startup: enabled
 
