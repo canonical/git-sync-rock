@@ -18,10 +18,12 @@ platforms:
   s390x:
 
 parts:
-  git:
+  runtime-deps:
     plugin: nil
     stage-packages:
       - git
+      - openssh-client
+      - socat
 
   git-sync:
     plugin: go
@@ -42,7 +44,7 @@ parts:
   deb-security-manifest:
     plugin: nil
     after:
-      - git
+      - runtime-deps
       - git-sync
       - ca-certs
     override-prime: |
