@@ -1,0 +1,51 @@
+name: git-sync
+summary: Petrified git-sync.
+description: "Git-sync sidecar process."
+version: "4.5.1"
+base: ubuntu@24.04
+license: Apache-2.0
+services:
+  git-sync:
+    # enable the /metrics endpoint so we can liveness-check the rock.
+    command: git-sync [ --repo https://github.com/kubernetes/git-sync/ --root git-sync --http-metrics --http-bind :1234 ]
+    override: replace
+    startup: disabled
+
+platforms:
+  amd64:
+  arm64:
+  ppc64el:
+  s390x:
+
+parts:
+  git:
+    plugin: nil
+    stage-packages:
+      - git
+
+  git-sync:
+    plugin: go
+    source: https://github.com/kubernetes/git-sync
+    source-type: git
+    source-tag: "v4.5.1"
+    source-depth: 1
+    build-snaps:
+      - go/1.25/stable
+    build-environment:
+      - CGO_ENABLED: 0
+      - GOFLAGS: -trimpath -ldflags=-w -ldflags=-s '-ldflags=-X k8s.io/git-sync/pkg/version.VERSION=4.5.1'
+
+  ca-certs:
+    plugin: nil
+    overlay-packages: [ca-certificates]
+
+  deb-security-manifest:
+    plugin: nil
+    after:
+      - git
+      - git-sync
+      - ca-certs
+    override-prime: |
+      set -x
+      mkdir -p $CRAFT_PRIME/usr/share/rocks/
+      (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && dpkg-query --admindir=$CRAFT_PRIME/var/lib/dpkg/ -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) > $CRAFT_PRIME/usr/share/rocks/dpkg.query
