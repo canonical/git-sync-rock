@@ -1,0 +1,21 @@
+name: Update rock
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  build:
+    uses: canonical/observability/.github/workflows/rock-update.yaml@v1
+    secrets: inherit
+    with:
+      rock-name: git-sync
+      source-repo: kubernetes/git-sync
+      check-go: true
+      update-script: |
+        # At this point, the reusable workflow already replaced the versions in the yaml
+        # and set the envvar VERSION for us to use here.
+        # All that's left is to update the `version.VERSION=...` string
+        sed -i "s|version.VERSION=[^']*|version.VERSION=$VERSION|g" "$rockcraft_yaml"
+        
