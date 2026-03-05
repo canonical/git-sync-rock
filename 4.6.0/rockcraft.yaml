@@ -29,7 +29,6 @@ parts:
     source-tag: "v4.6.0"
     source-depth: 1
     build-snaps:
-      - go/1.25/stable
       - go/1.23/stable
     build-environment:
       - CGO_ENABLED: 0
