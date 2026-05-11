@@ -2,7 +2,7 @@ name: git-sync
 summary: Petrified git-sync.
 description: "Git-sync sidecar process."
 version: "4.6.0"
-base: ubuntu@24.04
+base: ubuntu@26.04
 license: Apache-2.0
 services:
   git-sync:
