@@ -2,7 +2,7 @@ set allow-duplicate-recipes
 set allow-duplicate-variables
 import? 'rocks.just'
 
-lts_releases := '{"4.6": "2031-05-01"}'
+source_repo := 'kubernetes/git-sync'
 
 [private]
 @default:
@@ -10,18 +10,14 @@ lts_releases := '{"4.6": "2031-05-01"}'
   echo ""
   echo "For help with a specific recipe, run: just --usage <recipe>"
 
-# Generate a rock for the latest version of the upstream project
-[arg("source_repo", help="Repository of the upstream project in 'org/repo' form")]
+# Patch all existing major.minor folders, then sync the embedded version.VERSION ldflag
 [group("maintenance")]
-update source_repo:
+update:
   #!/usr/bin/env bash
-  just --justfile rocks.just update {{source_repo}}
-  # Additional update steps
-  latest_release="$(gh release list --repo {{source_repo}} --exclude-pre-releases --limit=1 --json tagName --jq '.[0].tagName')"
-  # Explicitly filter out prefixes for known rocks, so we can notice if a new rock has a different schema
-  version="${latest_release}"
-  version="${version#mimir-}"  # mimir
-  version="${version#cmd/builder/v}"  # opentelemetry-collector
-  version="${version#v}"  # Generic v- prefix
-  # Substitute the additional version reference
-  sed -i "s|version.VERSION=[^']*|version.VERSION=${version}|g" "${version}/rockcraft.yaml"
+  set -e
+  just --justfile rocks.just update
+  # Re-apply the embedded version reference for every maintained major.minor folder
+  for folder in $(find . -maxdepth 1 -type d -regextype posix-extended -regex '\./[0-9]+\.[0-9]+' -printf '%f\n'); do
+    version="$(yq -r '.version' "$folder/rockcraft.yaml")"
+    sed -i "s|version.VERSION=[^']*|version.VERSION=${version}|g" "$folder/rockcraft.yaml"
+  done
