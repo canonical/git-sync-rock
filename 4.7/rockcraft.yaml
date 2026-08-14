@@ -1,7 +1,7 @@
 name: git-sync
 summary: Petrified git-sync.
 description: "Git-sync sidecar process."
-version: "4.7.0"
+version: "4.7.1"
 base: ubuntu@26.04
 license: Apache-2.0
 services:
@@ -26,13 +26,13 @@ parts:
     plugin: go
     source: https://github.com/kubernetes/git-sync
     source-type: git
-    source-tag: "v4.7.0"
+    source-tag: "v4.7.1"
     source-depth: 1
     build-snaps:
       - go/1.23/candidate
     build-environment:
       - CGO_ENABLED: 0
-      - GOFLAGS: -trimpath -ldflags=-w -ldflags=-s '-ldflags=-X k8s.io/git-sync/pkg/version.VERSION=4.7.0'
+      - GOFLAGS: -trimpath -ldflags=-w -ldflags=-s '-ldflags=-X k8s.io/git-sync/pkg/version.VERSION=4.7.1'
   ca-certs:
     plugin: nil
     overlay-packages: [ca-certificates]
